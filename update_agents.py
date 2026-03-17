@@ -141,7 +141,7 @@ def main():
                    ("MACOSX_M_1","ARM_64"),
                    ("LINUX","X_64"),
                    ("LINUX_UBUNTU", "X_64")]:
-        info_file = f"{repo_dir}/{binary[0]}_{binary[1]}_info.json"
+        info_file = f"{binary[0]}_{binary[1]}_info.json"
 
         # Download binary information for the platform,architecture tuple
         new_info = download_binary_info(baseurl=base_url, headers=headers,

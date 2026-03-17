@@ -157,7 +157,7 @@ def main():
                                      payload=payload_generator(platform=binary[0],
                                                                arch=binary[1],
                                                                request_type="BINARY"),
-                                     checksum=new_info['Hash']):
+                                     checksum=new_info['hash']):
                 event = f"ERROR: Could not download binary info for {binary[0]}/{binary[1]}"
                 print(event)
                 log_event(event=event)

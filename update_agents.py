@@ -21,6 +21,11 @@ def validate_binary(checksum: str, binary_file: bytes):
     # Check the file's SHA-2-256 hash against the provided checksum
     # Return True if matched
     # Return False if not matched
+    if os.getenv('DEBUG'):
+        event = f"DEBUG: Received check has data - {checksum}"
+        print(event)
+        log_event(event=event)
+
     hash_type = checksum.split(' : ')[0]
     check_hash = checksum.split(' : ')[1]
     content_hash = None
@@ -37,6 +42,11 @@ def validate_binary(checksum: str, binary_file: bytes):
         print(event)
         log_event(event=event)
         return False
+
+    if os.getenv('DEBUG'):
+        event = f"DEBUG: calculated hash - {content_hash}"
+        print(event)
+        log_event(event=event)
 
     if content_hash == check_hash:
         return True

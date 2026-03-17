@@ -146,30 +146,34 @@ def main():
 
         current_info = load_binary_info(repo_dir=repo_dir, file_name=info_file)
         if current_info is None:
-            event = f"ERROR: Could not load binary info from file {info_file}"
+            event = f"WARNING: Could not load binary info from file {info_file}"
             print(event)
             log_event(event=event)
-            continue
 
-        # Download and validate new binary
-        binary_file = f"Qualys_Agent{new_info['extension']}"
-        if not binary_downloader(base_url=base_url, headers=headers, repo_dir=repo_dir, file_name=binary_file,
-                                 payload=payload_generator(platform=binary[0],
-                                                           arch=binary[1],
-                                                           request_type="BINARY"),
-                                 checksum=new_info['checksum']):
-            event = f"ERROR: Could not download binary info for {binary[0]}/{binary[1]}"
+        if current_info is not None and new_version(new_info=current_info, current_info=current_info):
+            # Download and validate new binary
+            binary_file = f"Qualys_Agent{new_info['extension']}"
+            if not binary_downloader(base_url=base_url, headers=headers, repo_dir=repo_dir, file_name=binary_file,
+                                     payload=payload_generator(platform=binary[0],
+                                                               arch=binary[1],
+                                                               request_type="BINARY"),
+                                     checksum=new_info['checksum']):
+                event = f"ERROR: Could not download binary info for {binary[0]}/{binary[1]}"
+                print(event)
+                log_event(event=event)
+                continue
+
+            # Write the new info file
+            with open(f"{repo_dir}/{info_file}", 'w') as f:
+                f.write(json.dumps(new_info, indent=4))
+
+            event=f"Updated {binary[0]}/{binary[1]} : File {binary_file}, version {new_info['version']}"
             print(event)
             log_event(event=event)
-            continue
-
-        # Write the new info file
-        with open(f"{repo_dir}/{info_file}", 'w') as f:
-            f.write(json.dumps(new_info, indent=4))
-
-        event=f"Updated {binary[0]}/{binary[1]} : File {binary_file}, version {new_info['version']}"
-        print(event)
-        log_event(event=event)
+        else:
+            event=f"Skipped {binary[0]}/{binary[1]}, no new version available"
+            print(event)
+            log_event(event=event)
 
 if __name__ == "__main__":
     main()

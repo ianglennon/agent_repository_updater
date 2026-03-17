@@ -148,15 +148,17 @@ def main():
                    ("MACOSX_M_1","ARM_64"),
                    ("LINUX","X_64"),
                    ("LINUX_UBUNTU", "X_64")]:
-        info_file = f"{binary[0]}_{binary[1]}_info.json"
+        platform = binary[0]
+        arch = binary[1]
+        info_file = f"{platform}_{arch}_info.json"
 
         # Download binary information for the platform,architecture tuple
         new_info = download_binary_info(baseurl=base_url, headers=headers,
-                                        payload=payload_generator(platform=binary[0],
-                                                                  arch=binary[1],
+                                        payload=payload_generator(platform=platform,
+                                                                  arch=arch,
                                                                   request_type="INFO"))
         if new_info is None:
-            event = f"ERROR: Could not download binary info for {binary[0]}/{binary[1]}"
+            event = f"ERROR: Could not download binary info for {platform}/{arch}"
             print(event)
             log_event(event=event)
             continue
@@ -169,26 +171,27 @@ def main():
 
         if current_info is None or new_version(new_info=current_info, current_info=current_info):
             # Download and validate new binary
-            binary_file = f"Qualys_Agent{new_info['extension']}"
+            binary_file = f"Qualys_Agent_{platform}_{arch}{new_info['extension']}"
             if not binary_downloader(base_url=base_url, headers=headers, repo_dir=repo_dir, file_name=binary_file,
-                                     payload=payload_generator(platform=binary[0],
-                                                               arch=binary[1],
+                                     payload=payload_generator(platform=platform,
+                                                               arch=arch,
                                                                request_type="BINARY"),
                                      checksum=new_info['hash']):
-                event = f"ERROR: Could not download binary info for {binary[0]}/{binary[1]}"
+                event = f"ERROR: Could not download binary info for {platform}/{arch}"
                 print(event)
                 log_event(event=event)
                 continue
 
-            # Write the new info file
+            # Add filename to new info file and write to disk
+            new_info['File'] = binary_file
             with open(f"{info_dir}/{info_file}", 'w') as f:
                 f.write(json.dumps(new_info, indent=4))
 
-            event=f"Updated {binary[0]}/{binary[1]} : File {binary_file}, version {new_info['version']}"
+            event=f"Updated {platform}/{arch} : File {binary_file}, version {new_info['version']}"
             print(event)
             log_event(event=event)
         else:
-            event=f"Skipped {binary[0]}/{binary[1]}, no new version available"
+            event=f"Skipped {platform}/{arch}, no new version available"
             print(event)
             log_event(event=event)
 

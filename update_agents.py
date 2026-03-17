@@ -26,8 +26,8 @@ def validate_binary(checksum: str, binary_file: bytes):
         print(event)
         log_event(event=event)
 
-    hash_type = checksum.split(' : ')[0]
-    check_hash = checksum.split(' : ')[1]
+    hash_type = checksum.split(':')[0].strip()
+    check_hash = checksum.split(':')[1].strip()
     content_hash = None
     match hash_type:
         case 'Hash-SHA-256':

@@ -150,7 +150,7 @@ def main():
             print(event)
             log_event(event=event)
 
-        if current_info is not None and new_version(new_info=current_info, current_info=current_info):
+        if current_info is None or new_version(new_info=current_info, current_info=current_info):
             # Download and validate new binary
             binary_file = f"Qualys_Agent{new_info['extension']}"
             if not binary_downloader(base_url=base_url, headers=headers, repo_dir=repo_dir, file_name=binary_file,

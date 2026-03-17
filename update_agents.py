@@ -116,12 +116,12 @@ def new_version(new_info: dict, current_info: dict):
     else:
         return False
 
-def load_binary_info(repo_dir: str, file_name: str):
+def load_binary_info(info_dir: str, file_name: str):
     # Load binary info file
     # Return info as dict if successful
     # Return None if unsuccessful
-    if exists(f"{repo_dir}/{file_name}"):
-        with open(f"{repo_dir}/{file_name}", 'r') as f:
+    if exists(f"{info_dir}/{file_name}"):
+        with open(f"{info_dir}/{file_name}", 'r') as f:
             info_dict = json.loads(f.read())
             return info_dict
     else:
@@ -135,6 +135,13 @@ def main():
     headers = {"Authorization": f"Basic {b64encode(f"{username}:{password}".encode()).decode()}",
                "X-Requested-With": "update_agents.py"}
     repo_dir = os.getenv("REPO_DIRECTORY")
+    info_dir = f"{repo_dir}/info"
+
+    if not exists(repo_dir):
+        os.makedirs(repo_dir)
+        os.makedirs(info_dir)
+    elif not exists(info_dir):
+        os.makedirs(info_dir)
 
     for binary in [("WINDOWS","X_86_64"),
                    ("MACOSX","X_64"),
@@ -154,7 +161,7 @@ def main():
             log_event(event=event)
             continue
 
-        current_info = load_binary_info(repo_dir=repo_dir, file_name=info_file)
+        current_info = load_binary_info(info_dir=info_dir, file_name=info_file)
         if current_info is None:
             event = f"WARNING: Could not load binary info from file {info_file}"
             print(event)
@@ -174,7 +181,7 @@ def main():
                 continue
 
             # Write the new info file
-            with open(f"{repo_dir}/{info_file}", 'w') as f:
+            with open(f"{info_dir}/{info_file}", 'w') as f:
                 f.write(json.dumps(new_info, indent=4))
 
             event=f"Updated {binary[0]}/{binary[1]} : File {binary_file}, version {new_info['version']}"

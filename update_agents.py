@@ -59,8 +59,10 @@ def binary_downloader(base_url: str, headers: dict, repo_dir: str, file_name: st
     # Return True if download successful
     # Return False if download unsuccessful
     # Return False if file save unsuccessful
-    binary_response = requests.post(url=f"{base_url}/qps/rest/1.0/download/ca/downloadbinary", headers=headers,
-                                    data=payload)
+    binary_response = requests.post(url=f"{base_url}/qps/rest/1.0/download/ca/downloadbinary",
+                                    headers=headers,
+                                    data=payload,
+                                    proxies={"http": os.getenv("PROXY_URL"), "https": os.getenv("PROXY_URL")})
     if binary_response.status_code == 200:
         if validate_binary(checksum=checksum, binary_file=binary_response.content):
             with open(f"{repo_dir}/{file_name}", 'wb') as f:
@@ -76,7 +78,10 @@ def download_binary_info(baseurl: str, headers: dict, payload: str):
     # Download binary information for Qualys Cloud Agent installer
     # Return binary information as dict if successful
     # Return None if unsuccessful
-    info_response = requests.post(url=f"{baseurl}/qps/rest/1.0/process/ca/binaryinfo", headers=headers, data=payload)
+    info_response = requests.post(url=f"{baseurl}/qps/rest/1.0/process/ca/binaryinfo",
+                                  headers=headers,
+                                  data=payload,
+                                  proxies={"http": os.getenv("PROXY_URL"), "https": os.getenv("PROXY_URL")})
     if info_response.status_code == 200:
         return xmltodict.parse(info_response.content)['ServiceResponse']['data']['AllBinaryInfo']['platforms']['Platform']
     else:
@@ -136,6 +141,8 @@ def main():
                "X-Requested-With": "update_agents.py"}
     repo_dir = os.getenv("REPO_DIRECTORY")
     info_dir = f"{repo_dir}/info"
+    proxy_url = os.getenv("PROXY_URL")
+
 
     if not exists(repo_dir):
         os.makedirs(repo_dir)
